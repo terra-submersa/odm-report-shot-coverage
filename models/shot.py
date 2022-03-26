@@ -12,6 +12,5 @@ def json_parse_shot(image_name: str, el: dict, cameras: dict[str, Camera]) -> Sh
     shot = Shot()
     shot.image_name = image_name
     shot.rotation = el['rotation']
-    shot.translation=el['translation']
+    shot.translation = el['translation']
     shot.camera = cameras[el['camera']]
-

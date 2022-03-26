@@ -6,7 +6,7 @@ from models.camera import json_parse_camera
 
 class Test(TestCase):
     def test_json_load_camera(self):
-        json_str="""
+        json_str = """
         {
                 "projection_type": "brown",
                 "width": 3000,
