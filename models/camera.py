@@ -5,6 +5,26 @@ class Camera:
     k1: float
     k2: float
 
+    def perspective_pixel(self, rel_coords: (float, float, float)) -> (float, float):
+        """
+        Turns a relative coordinates coordinates [x,y,z] into a [u,v] camera coordinates
+        https://opensfm.readthedocs.io/en/latest/geometry.html
+        :param rel_coords: a three fload array
+        :type rel_coords: list[float]
+        :return:
+        :rtype:
+        """
+        [x, y, z] = rel_coords
+        x_n = x / z
+        y_n = y / z
+        r_2 = x_n * x_n + y_n * y_n
+        d = 1 + r_2 * self.k1 + r_2 * r_2 * self.k2
+        return self.focal * d * x_n, self.focal * d * y_n
+
+    @staticmethod
+    def in_frame(pixel: (float, float)) -> bool:
+        return 0 <= pixel[0] <= 1 and 0 <= pixel[1] <= 1
+
 
 def json_parse_camera(el: dict) -> Camera:
     camera = Camera()

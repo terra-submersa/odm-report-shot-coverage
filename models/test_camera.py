@@ -2,6 +2,7 @@ import json
 from unittest import TestCase
 
 from models.camera import json_parse_camera
+from models.test_fixtures import TestFixtures as Fixtures
 
 
 class Test(TestCase):
@@ -30,3 +31,7 @@ class Test(TestCase):
         self.assertEqual(0.5207834102328533, got.focal)
         self.assertEqual(-0.10638507280457302, got.k1)
         self.assertEqual(0.06769290794144624, got.k2)
+
+    def test_perspective_pixel(self):
+        got = Fixtures.a_camera().perspective_pixel([1.2646942673746822, 2.678944091796595, 2.036753006024462])
+        self.assertEqual((0.3485660120759846, 0.7383514599069598), got)
