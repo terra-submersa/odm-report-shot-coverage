@@ -1,0 +1,5 @@
+/.idea/
+/.pytest_cache/
+/venv/
+/.dcignore
+/opensfm-camera-coverage.iml
