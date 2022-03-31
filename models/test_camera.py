@@ -1,6 +1,8 @@
 import json
 from unittest import TestCase
 
+import numpy as np
+
 from models.camera import json_parse_camera
 from models.test_fixtures import TestFixtures as Fixtures
 
@@ -32,6 +34,31 @@ class Test(TestCase):
         self.assertEqual(-0.10638507280457302, got.k1)
         self.assertEqual(0.06769290794144624, got.k2)
 
-    def test_perspective_pixel(self):
-        got = Fixtures.a_camera().perspective_pixel([1.2646942673746822, 2.678944091796595, 2.036753006024462])
-        self.assertEqual((0.3485660120759846, 0.7383514599069598), got)
+    # GoPro in linear mode has a horizontal FOV of 86.7º
+    # I've adapted it to 89.9 (water diffraction ??), based on trial an error to fit the camera.json specs
+    horiz_fov = 89.9 / 2 / 180 * np.pi
+    tan_camera = np.tan(horiz_fov)
+    given_z = 10
+
+    def test_perspective_center(self):
+        got = Fixtures.a_camera_gopro8_linear().perspective_pixel((0, 0, self.given_z))
+        self.assertEqual(0, got[0])
+        self.assertEqual(0, got[1])
+
+    def test_perspective_max_right(self):
+        given_x = self.given_z * self.tan_camera
+        got = Fixtures.a_camera_gopro8_linear().perspective_pixel((given_x, 0, self.given_z))
+        self.assertAlmostEqual(0.5, got[0], 3)
+        self.assertAlmostEqual(0, got[1], 3)
+
+    def test_perspective_max_right_factor_2(self):
+        given_x = self.given_z * self.tan_camera
+        got = Fixtures.a_camera_gopro8_linear().perspective_pixel((given_x * 2, 0, self.given_z * 2))
+        self.assertAlmostEqual(0.5, got[0], 3)
+        self.assertAlmostEqual(0, got[1], 3)
+
+    def test_perspective_max_top(self):
+        given_x = self.given_z * self.tan_camera
+        got = Fixtures.a_camera_gopro8_linear().perspective_pixel((0, given_x, self.given_z))
+        self.assertAlmostEqual(0, got[0], 3)
+        self.assertAlmostEqual(0.5, got[1], 3)

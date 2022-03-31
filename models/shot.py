@@ -1,6 +1,7 @@
-from models.camera import Camera
-from scipy.spatial.transform import Rotation as R, Rotation
 import numpy as np
+from scipy.spatial.transform import Rotation as R, Rotation
+
+from models.camera import Camera
 
 
 class Shot:
@@ -8,7 +9,7 @@ class Shot:
     _rotation: (float, float, float)
     translation: (float, float, float)
     camera: Camera
-    _transfo_inv_rotation: Rotation
+    _transfo_rotation: Rotation
 
     @property
     def rotation(self) -> (float, float, float):
@@ -18,7 +19,24 @@ class Shot:
     def rotation(self, new_rotation: (float, float, float)):
         self._rotation = new_rotation
         (r_x, r_y, r_z) = new_rotation
-        self._transfo_inv_rotation = R.from_rotvec(np.pi / 2 * np.array([-r_x, -r_y, -r_z]))
+        # print(np.sqrt(r_x*r_x+r_y*r_y+r_z*r_z))
+
+        self._transfo_rotation = R.from_rotvec([r_x, r_y, r_z])
+
+        # (r_x, r_y, r_z) = (0, 0, np.pi)
+
+        # self._transfo_rotation = R.from_euler('xyz', [0, 0, 0 ], degrees=True)
+        # self._transfo_rotation = R.from_rotvec([np.pi/np.sqrt(2), np.pi/np.sqrt(2), 0])
+
+        # print(self._transfo_rotation.as_euler('xyz'))
+        # print(self._transfo_rotation.as_rotvec())
+
+    def __repr__(self):
+        return '%s translation=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f)' % (
+            self.image_name,
+            self.translation[0], self.translation[1], self.translation[2],
+            self.rotation[0], self.rotation[1], self.rotation[2],
+        )
 
     def camera_relative_coordinates(self, abs_coords: (float, float, float)) -> (float, float, float):
         """
@@ -28,8 +46,13 @@ class Shot:
         :return: (x,y,z), in camera pixel
         :rtype:(float, float, float)
         """
-        rc = self._transfo_inv_rotation.apply(abs_coords)
-        return rc[0] - self.translation[0], rc[1] - self.translation[1], rc[2] - self.translation[2]
+        tc = abs_coords[0] - self.translation[0], abs_coords[1] - self.translation[1], abs_coords[2] - self.translation[
+            2]
+        rc = self._transfo_rotation.apply(tc, inverse=True)
+        return rc[0], rc[1], rc[2]
+        # rc = self._transfo_rotation.apply(abs_coords, inverse=True)
+        # tc = rc[0] - self.translation[0], rc[1] - self.translation[1], rc[2] - self.translation[2]
+        # return tc
 
     def camera_pixel(self, abs_coords: (float, float, float)) -> (float, float):
         """

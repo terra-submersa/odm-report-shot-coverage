@@ -21,9 +21,10 @@ class Camera:
         d = 1 + r_2 * self.k1 + r_2 * r_2 * self.k2
         return self.focal * d * x_n, self.focal * d * y_n
 
+
     @staticmethod
     def in_frame(pixel: (float, float)) -> bool:
-        return 0 <= pixel[0] <= 1 and 0 <= pixel[1] <= 1
+        return -0.5 <= pixel[0] <= 0.5 and -0.5 <= pixel[1] <= 0.5
 
 
 def json_parse_camera(el: dict) -> Camera:

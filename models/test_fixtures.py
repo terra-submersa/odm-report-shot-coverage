@@ -5,7 +5,7 @@ from models.shot import Shot
 
 class TestFixtures:
     @staticmethod
-    def a_camera() -> Camera:
+    def a_camera_gopro8_linear() -> Camera:
         camera = Camera()
         camera.width = 3000
         camera.height = 4000
@@ -25,7 +25,7 @@ class TestFixtures:
     def a_shot() -> Shot:
         shot = Shot()
         shot.image_name = 'a.jpeg'
-        shot.camera = TestFixtures.a_camera()
+        shot.camera = TestFixtures.a_camera_gopro8_linear()
         shot.rotation = (2.0577299307555323, -2.20218132761156, -0.04484071736689525)
         shot.translation = (0.033173629227221335, 0.5114751173118289, -0.07091459305900544)
         return shot

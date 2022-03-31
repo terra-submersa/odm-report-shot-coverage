@@ -11,12 +11,11 @@ class Test(TestCase):
 
     def test_json_parse_reconstruction_collection(self):
         got = json_parse_reconstruction_collection(self.obj_reconstruction_collection)
-
-        self.assertEqual(1, len(got))
+        self.assertEqual(1, len(got), 'nb reconstructions')
 
     def test_json_parse_reconstruction(self):
         got = json_parse_reconstruction(self.obj_reconstruction_collection[0])
 
-        self.assertEqual(1, len(got.cameras))
-        self.assertEqual(49, len(got.shots))
-        self.assertEqual(5848, len(got.points))
+        self.assertEqual(2, len(got.cameras), 'cameras')
+        self.assertEqual(60, len(got.shots), 'shots')
+        self.assertEqual(51524, len(got.points), 'points')
