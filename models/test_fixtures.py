@@ -17,7 +17,7 @@ class TestFixtures:
     @staticmethod
     def a_point() -> Point:
         point = Point()
-        point.name = 'A'
+        point.id = 'A'
         point.coordinates = (0.43375263823147325, 2.4853185781312033, -3.0598703709130475)
         return point
 

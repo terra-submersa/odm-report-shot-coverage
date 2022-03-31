@@ -1,4 +1,3 @@
-import numpy as np
 from scipy.spatial.transform import Rotation as R, Rotation
 
 from models.camera import Camera
@@ -26,7 +25,7 @@ class Shot:
         # (r_x, r_y, r_z) = (0, 0, np.pi)
 
         # self._transfo_rotation = R.from_euler('xyz', [0, 0, 0 ], degrees=True)
-        # self._transfo_rotation = R.from_rotvec([np.pi/np.sqrt(2), np.pi/np.sqrt(2), 0])
+        # $self._transfo_rotation = R.from_rotvec([np.pi/np.sqrt(2), np.pi/np.sqrt(2), 0])
 
         # print(self._transfo_rotation.as_euler('xyz'))
         # print(self._transfo_rotation.as_rotvec())
@@ -37,6 +36,14 @@ class Shot:
             self.translation[0], self.translation[1], self.translation[2],
             self.rotation[0], self.rotation[1], self.rotation[2],
         )
+
+    def to_json(self):
+        return {
+            'imageName': self.image_name,
+            'rotation': self._rotation,
+            'translation': self.translation,
+            'camera': self.camera.name,
+        }
 
     def camera_relative_coordinates(self, abs_coords: (float, float, float)) -> (float, float, float):
         """
@@ -64,6 +71,19 @@ class Shot:
         """
         rel_coords = self.camera_relative_coordinates(abs_coords)
         return self.camera.perspective_pixel(rel_coords)
+
+
+class ShotOrthoBoundaries:
+    x_min: float
+    x_max: float
+    y_min: float
+    y_max: float
+
+    def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float):
+        self.x_min = x_min
+        self.x_max = x_max
+        self.y_min = y_min
+        self.y_max = y_max
 
 
 def json_parse_shot(image_name: str, el: dict, cameras: dict[str, Camera]) -> Shot:

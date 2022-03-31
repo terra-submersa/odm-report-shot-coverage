@@ -1,9 +1,9 @@
 from unittest import TestCase
 
+import numpy as np
+
 from models.point import Point
 from models.shot import Shot
-from models.test_fixtures import TestFixtures
-import numpy as np
 
 
 class TestShot(TestCase):
@@ -30,7 +30,7 @@ class TestShot(TestCase):
         got = shot.camera_relative_coordinates(point.coordinates)
         self.assertEqual((0, 0, -5), got)
 
-    def test_camera_relative_coordinates_straight_forward_middle(self):
+    def test_camera_relative_coordinates_straight_forward_shifted(self):
         shot = Shot()
         shot.translation = (10, 20, 30)
         shot.rotation = (0, 0, 0)

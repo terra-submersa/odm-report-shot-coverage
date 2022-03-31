@@ -1,10 +1,10 @@
 class Point:
-    name: str
+    id: int
     coordinates: (float, float, float)
 
 
 def json_parse_point(name: str, el: dict) -> Point:
     point = Point()
-    point.name = name
+    point.id = int(name)
     point.coordinates = el['coordinates']
     return point

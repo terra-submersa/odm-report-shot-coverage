@@ -1,6 +1,8 @@
+import json
+
 from models.camera import Camera, json_parse_camera
 from models.point import Point, json_parse_point
-from models.shot import Shot, json_parse_shot
+from models.shot import Shot, json_parse_shot, ShotOrthoBoundaries
 from scipy import stats
 
 
@@ -8,6 +10,8 @@ class Reconstruction:
     cameras: dict[str, Camera] = {}
     _shots: list[Shot] = []
     points: list[Point] = []
+    shot_boundaries: dict[str, ShotOrthoBoundaries] = {}
+    shot_points: dict[str, set[int]] = {}
 
     @property
     def shots(self) -> list[Shot]:
@@ -23,27 +27,37 @@ class Reconstruction:
     def add_point(self, point: Point):
         self.points.append(point)
 
-    def shot_xy_boundaries(self) -> dict[str, ((float, float), (float, float))]:
+    def to_json(self) -> dict:
+        return {
+            'cameras': json.dumps(self.cameras, default=vars),
+            'shots': [s.to_json() for s in self.shots],
+            'points': {p.id: json.dumps(p, default=vars) for p in self.points},
+            'shotBoundaries': {i: json.dumps(b, default=vars) for i, b in self.shot_boundaries.items()},
+            'shotPoints': self.shot_points
+        }
+
+    def compute_shot_point_coverage(self):
+        """
+        From shots and points, fill the shot_boundaries and the shot_contains_points maps
+        :rtype: None
+        """
         ret = {}
-        for shot in [s for s in self.shots if s.image_name in {'GOPR3101.jpeg', 'GOPR3102.jpeg', 'GOPR3103.jpeg', 'GOPR3104.jpeg', 'GOPR3105.jpeg', 'GOPR3106.jpeg' , 'GOPR3107.jpeg' }]:
-            print('------------------- %s' % shot)
+        for shot in self.shots:
             pix_coords = []
             for point in self.points:
                 pixel = shot.camera_pixel(point.coordinates)
                 if shot.camera.in_frame(pixel):
                     pix_coords.append((pixel, point.coordinates))
-            if len(pix_coords) >= 2:
-                lin_reg_x = lin_reg([(pc[0][0], pc[1][0]) for pc in pix_coords])
-                lin_reg_y = lin_reg([(pc[0][1], pc[1][1]) for pc in pix_coords])
-                print('%s\t%d\n\t%s\n\t%s' % (shot.image_name, len(pix_coords), lin_reg_x, lin_reg_y))
-                print('(%f, %f) - (%f, %f) / %f x %f' % (
-                    lin_reg_x.intercept - lin_reg_x.slope / 2,
-                    lin_reg_x.intercept + lin_reg_x.slope / 2,
-                    lin_reg_y.intercept - lin_reg_y.slope / 2,
-                    lin_reg_y.intercept + lin_reg_y.slope / 2,
-                    lin_reg_x.slope,
-                    lin_reg_y.slope
-                ))
+                    if shot.image_name not in self.shot_points:
+                        self.shot_points[shot.image_name] = set()
+                    self.shot_points[shot.image_name].add(point.id)
+        if len(pix_coords) >= 2:
+            ret[shot.image_name] = ShotOrthoBoundaries(
+                x_min=min([(pc[1][0]) for pc in pix_coords]),
+                x_max=max([(pc[1][0]) for pc in pix_coords]),
+                y_min=min([(pc[1][1]) for pc in pix_coords]),
+                y_max=max([(pc[1][1]) for pc in pix_coords]),
+            )
 
 
 class ReconstructionCollection:
@@ -68,7 +82,7 @@ def lin_reg(pairs: list[(float, float)]) -> (float, float, float, float):
 def json_parse_reconstruction(el: dict) -> Reconstruction:
     reconstruction = Reconstruction()
     for name, ela in el['cameras'].items():
-        reconstruction.add_camera(name, json_parse_camera(ela))
+        reconstruction.add_camera(name, json_parse_camera(name, ela))
 
     for image_name, ela in el['shots'].items():
         reconstruction.add_shot(json_parse_shot(image_name, ela, reconstruction.cameras))

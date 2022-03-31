@@ -12,7 +12,7 @@ if __name__ == '__main__':
             # s.image_name in {'GOPR3101.jpeg','GOPR3102.jpeg','GOPR3105.jpeg', 'GOPR3084.jpeg', 'GOPR3123.jpeg', }]:
             print('-------- %s ' % shot)
 
-            in_points = [];
+            in_points = []
             for point in reconstruction.points:
                 pixel = shot.camera_pixel(point.coordinates)
                 if shot.camera.in_frame(pixel):
@@ -35,13 +35,14 @@ if __name__ == '__main__':
             cz_med = cz[int(len(cz) / 2)]
             cz_min = cz[int(len(cx) * 0.02)]
             cz_max = cz[int(len(cx) * 0.98)]
-            print('%d points (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) %.2f x %.2f x %.2f ' % (
-                len(in_points),
-                cx_med, cy_med, cz_med,
-                (cx_min + cx_max) / 2, (cy_min + cy_max) / 2, (cz_min + cz_max) / 2,
-                cx_max - cx_min, cy_max - cy_min, cz_max - cz_min))
+            print(
+                '%d points\nmedian center=(%.2f, %.2f, %.2f)\naverage center=(%.2f, %.2f, %.2f)\ndim=%.2f x %.2f x %.2f ' % (
+                    len(in_points),
+                    cx_med, cy_med, cz_med,
+                    (cx_min + cx_max) / 2, (cy_min + cy_max) / 2, (cz_min + cz_max) / 2,
+                    cx_max - cx_min, cy_max - cy_min, cz_max - cz_min))
             p1 = (shot.translation[0], shot.translation[1], shot.translation[2] + 3)
-            print('camera_relative_coordinates at the vertical: %s' % shot.camera_relative_coordinates(p1))
+            print('camera_relative_coordinates at the vertical: %s' % str(shot.camera_relative_coordinates(p1)))
             print('camera pixel at the vertical: %s' % str(shot.camera_pixel(p1)))
             cz_mid = (cz_max - cz_min) / 2
             print('camera pixel min,min: %s' % str(shot.camera_pixel((cx_min, cy_min, cz_med))))

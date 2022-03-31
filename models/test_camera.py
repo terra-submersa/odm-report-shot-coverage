@@ -27,7 +27,7 @@ class Test(TestCase):
             """
         given = json.loads(json_str)
 
-        got = json_parse_camera(given)
+        got = json_parse_camera('gopro8', given)
         self.assertEqual(3000, got.width)
         self.assertEqual(4000, got.height)
         self.assertEqual(0.5207834102328533, got.focal)
