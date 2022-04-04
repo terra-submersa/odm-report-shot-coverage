@@ -1,0 +1,15 @@
+rect.background {
+  fill: transparent;
+}
+
+g.points {
+  clip-path: url(#mapClipping);
+}
+
+circle.point {
+  fill: orangered;
+}
+
+circle.shot {
+  fill: royalblue;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenSFM shot coverage</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+          integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="./index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+</head>
+<body>
+<div class="columns">
+  <div class="column is-three-quarters">
+    <div id="svg-container">
+      <svg id="map"></svg>
+    </div>
+  </div>
+  <div class="column is-one-quarter">
+    <h3>Point</h3>
+    <div id="selected-point">
+      <div><span>id: </span><span class="id"></span></div>
+      <div><span>coordinates: </span><span class="coordinates"></span></div>
+    </div>
+    <h3>Shots</h3>
+    <ul id="point-shots-list">
+
+    </ul>
+  </div>
+</div>
+
+
+</body>
+<footer>
+  <script src="index.js"/>
+
+</footer>
+</html>

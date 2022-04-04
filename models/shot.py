@@ -85,6 +85,14 @@ class ShotOrthoBoundaries:
         self.y_min = y_min
         self.y_max = y_max
 
+    def to_json(self) -> dict:
+        return {
+            'x_min': self.x_min,
+            'x_max': self.x_max,
+            'y_min': self.y_min,
+            'y_max': self.y_max,
+        }
+
 
 def json_parse_shot(image_name: str, el: dict, cameras: dict[str, Camera]) -> Shot:
     shot = Shot()

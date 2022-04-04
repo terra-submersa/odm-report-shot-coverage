@@ -29,11 +29,11 @@ class Reconstruction:
 
     def to_json(self) -> dict:
         return {
-            'cameras': json.dumps(self.cameras, default=vars),
+            'cameras': {name: camera.to_json() for name, camera in self.cameras.items()},
             'shots': [s.to_json() for s in self.shots],
-            'points': {p.id: json.dumps(p, default=vars) for p in self.points},
-            'shotBoundaries': {i: json.dumps(b, default=vars) for i, b in self.shot_boundaries.items()},
-            'shotPoints': self.shot_points
+            'points': [p.to_json() for p in self.points],
+            'shotBoundaries': {i: b.to_json() for i, b in self.shot_boundaries.items()},
+            'shotPoints': {img: list(points) for img, points in self.shot_points.items()}
         }
 
     def compute_shot_point_coverage(self):
@@ -41,7 +41,6 @@ class Reconstruction:
         From shots and points, fill the shot_boundaries and the shot_contains_points maps
         :rtype: None
         """
-        ret = {}
         for shot in self.shots:
             pix_coords = []
             for point in self.points:
@@ -51,8 +50,7 @@ class Reconstruction:
                     if shot.image_name not in self.shot_points:
                         self.shot_points[shot.image_name] = set()
                     self.shot_points[shot.image_name].add(point.id)
-        if len(pix_coords) >= 2:
-            ret[shot.image_name] = ShotOrthoBoundaries(
+            self.shot_boundaries[shot.image_name] = ShotOrthoBoundaries(
                 x_min=min([(pc[1][0]) for pc in pix_coords]),
                 x_max=max([(pc[1][0]) for pc in pix_coords]),
                 y_min=min([(pc[1][1]) for pc in pix_coords]),
@@ -85,7 +83,7 @@ def json_parse_reconstruction(el: dict) -> Reconstruction:
         reconstruction.add_camera(name, json_parse_camera(name, ela))
 
     for image_name, ela in el['shots'].items():
-        reconstruction.add_shot(json_parse_shot(image_name, ela, reconstruction.cameras))
+            reconstruction.add_shot(json_parse_shot(image_name, ela, reconstruction.cameras))
 
     for name, ela in el['points'].items():
         reconstruction.add_point(json_parse_point(name, ela))

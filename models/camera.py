@@ -22,6 +22,16 @@ class Camera:
         d = 1 + r_2 * self.k1 + r_2 * r_2 * self.k2
         return self.focal * d * x_n, self.focal * d * y_n
 
+    def to_json(self) -> dict:
+        return {
+            'name': self.name,
+            'width': self.width,
+            'height': self.height,
+            'focal': self.focal,
+            'k1': self.k1,
+            'k2': self.k2,
+        }
+
     @staticmethod
     def in_frame(pixel: (float, float)) -> bool:
         return -0.5 <= pixel[0] <= 0.5 and -0.5 <= pixel[1] <= 0.5
@@ -32,9 +42,12 @@ def json_parse_camera(name: str, el: dict) -> Camera:
     camera.name = name
     camera.width = el['width']
     camera.height = el['height']
-    if el['focal_x'] != el['focal_y']:
-        raise Exception('Cannot survive different focal x/y %f/%f' % (el['focal_x'], el['focal_y']))
-    camera.focal = el['focal_x']
+    if 'focal' in el:
+        camera.focal = el['focal']
+    else:
+        if el['focal_x'] != el['focal_y']:
+            raise Exception('Cannot survive different focal x/y %f/%f' % (el['focal_x'], el['focal_y']))
+        camera.focal = el['focal_x']
     camera.k1 = el['k1']
     camera.k2 = el['k2']
     return camera
