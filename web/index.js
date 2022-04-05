@@ -47,9 +47,9 @@ function parseReconstruction(json) {
         shotPoints: json.shotPoints,
         shots: json.shots,
     };
-    const xs = _.map(rec.points, p => p.coordinates[0]);
-    const ys = _.map(rec.points, p => p.coordinates[1]);
-    const zs = _.map(rec.points, p => p.coordinates[2]);
+    const xs = _.map(rec.points, p => p[0]);
+    const ys = _.map(rec.points, p => p[1]);
+    const zs = _.map(rec.points, p => p[2]);
 
     rec.coords_domain = {
         x: [_.min(xs), _.max(xs)],
@@ -96,8 +96,8 @@ function setupPoints(reconstruction) {
                     .append('circle')
                     .classed('point', true)
                     .attr('r', 0.3)
-                    .attr('cx', p => scales.x(p.coordinates[0]))
-                    .attr('cy', p => scales.y(p.coordinates[1]))
+                    .attr('cx', p => scales.x(p[0]))
+                    .attr('cy', p => scales.y(p[1]))
                     .on('mouseover', p => {
                         selectedShots.length = 0;
                         _.each(reconstruction.pointShots[p.id], s => selectedShots.push(s));
@@ -153,7 +153,7 @@ function updateShots(reconstruction) {
 function updateSelectedPoint(p) {
     const el = d3.select('#selected-point');
     el.select('.id').text(p.id);
-    el.select('.coordinates').text(`${p.coordinates[0].toFixed(4)}, ${p.coordinates[1].toFixed(4)}, ${p.coordinates[2].toFixed(4)}`);
+    el.select('.coordinates').text(`${p[0].toFixed(4)}, ${p[1].toFixed(4)}, ${p[2].toFixed(4)}`);
 
 }
 

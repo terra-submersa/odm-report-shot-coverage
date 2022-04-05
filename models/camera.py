@@ -3,8 +3,8 @@ class Camera:
     width: int
     height: int
     focal: float
-    k1: float
-    k2: float
+    k1: float = 0
+    k2: float = 0
 
     def perspective_pixel(self, rel_coords: (float, float, float)) -> (float, float):
         """
