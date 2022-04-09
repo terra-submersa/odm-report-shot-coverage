@@ -1,10 +1,40 @@
 class Camera:
     name: str
-    width: int
-    height: int
+    _width: int = None
+    _height: int = None
+    _width_rel_max = None
+    _height_rel_max = None
     focal: float
     k1: float = 0
     k2: float = 0
+
+    @property
+    def width(self) -> int:
+        return self._width
+
+    @property
+    def height(self) -> int:
+        return self._height
+
+    @width.setter
+    def width(self, new_width: int):
+        self._width = new_width
+        self.__compute_ref_max()
+
+    @height.setter
+    def height(self, new_height: int):
+        self._height = new_height
+        self.__compute_ref_max()
+
+    def __compute_ref_max(self):
+        if self._width is None or self._height is None:
+            return
+        if self._width >= self.height:
+            self._width_rel_max = 0.5
+            self._height_rel_max = 0.5 * self._height / self._width
+        else:
+            self._height_rel_max = 0.5
+            self._width_rel_max = 0.5 / self._height * self._width
 
     def perspective_pixel(self, rel_coords: (float, float, float)) -> (float, float):
         """
@@ -32,9 +62,9 @@ class Camera:
             'k2': self.k2,
         }
 
-    @staticmethod
-    def in_frame(pixel: (float, float)) -> bool:
-        return -0.5 <= pixel[0] <= 0.5 and -0.5 <= pixel[1] <= 0.5
+    def in_frame(self, pixel: (float, float)) -> bool:
+        return -self._width_rel_max <= pixel[0] <= self._width_rel_max and \
+               -self._height_rel_max <= pixel[1] <= self._height_rel_max
 
 
 def json_parse_camera(name: str, el: dict) -> Camera:

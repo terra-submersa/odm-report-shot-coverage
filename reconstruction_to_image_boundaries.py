@@ -2,7 +2,7 @@ import json
 from PIL import Image
 from pathlib import Path
 
-from models.reconstruction import json_parse_reconstruction_collection, json_parse_reconstruction
+from models.reconstruction import parse_reconstruction
 
 
 def copy_orthophoto(project_dir: str, out_dir: str):
@@ -27,9 +27,9 @@ if __name__ == '__main__':
 
     copy_orthophoto(project_dir, out_dir)
 
-    reconstruction = json_parse_reconstruction(project_dir)
+    reconstruction = parse_reconstruction(project_dir)
 
-    reconstruction.compute_shot_point_coverage()
+    reconstruction.compute_shot_boundaries()
 
-    with open('%s/reconstruction_shot_points.json' % out_dir, 'w') as fd_out:
+    with open('%s/reconstruction_shots.json' % out_dir, 'w') as fd_out:
         json.dump(reconstruction.to_json(), fd_out)

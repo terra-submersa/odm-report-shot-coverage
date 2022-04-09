@@ -1,4 +1,4 @@
-const marginAxes = 30;
+const marginAxes = 50;
 const dimensions = {
     total: {
         width: 500,
@@ -20,12 +20,12 @@ setupDimensions(elSvgContainer.node().clientWidth, dimensions.total.height)
 
 const projectDir = './data'
 
-d3.json(`${projectDir}/reconstruction_shot_points.json`)
+d3.json(`${projectDir}/reconstruction_shots.json`)
     .then(r => {
         const rec = parseReconstruction(r);
         initScales(rec);
-        setupPoints(rec);
-        setupShots(rec);
+        //setupPoints(rec);
+        refreshShots(rec);
     })
     .then(() =>
         d3.json(`${projectDir}/odm_orthophoto_corners.json`)
@@ -33,7 +33,7 @@ d3.json(`${projectDir}/reconstruction_shot_points.json`)
     .then(corners => {
         elOrthoImage
             .attr('x', scales.x(corners.x[0]))
-            .attr('y', scales.y(corners.y[0]))
+            .attr('y', scales.y(corners.y[1]))
             .attr('width', scales.x(corners.x[1]) - scales.x(corners.x[0]))
         //.attr('height', scales.y(corners.y[1]) - scales.y(corners.y[0]));
     })
@@ -44,31 +44,14 @@ function parseReconstruction(json) {
     const rec = {
         points: json.points,
         shots: json.shots,
-        shotPoints: json.shotPoints,
-        shots: json.shots,
+        boundaries: json.boundaries,
     };
-    const xs = _.map(rec.points, p => p[0]);
-    const ys = _.map(rec.points, p => p[1]);
-    const zs = _.map(rec.points, p => p[2]);
 
-    rec.coords_domain = {
-        x: [_.min(xs), _.max(xs)],
-        y: [_.min(ys), _.max(ys)],
-        z: [_.min(zs), _.max(zs)],
+    rec.shots.forEach(s => s.isSelected = false);
+    rec.coordsDomain = {
+        x: [rec.boundaries.xMin, rec.boundaries.xMax],
+        y: [rec.boundaries.yMin, rec.boundaries.yMax],
     }
-    console.log('coords_domain', rec.coords_domain)
-
-    rec.pointShots = [];
-    shots = {};
-    _.each(rec.shots, (s) => shots[s.imageName] = s);
-    _.each(rec.shotPoints, (points, img) => {
-        _.each(points, p => {
-            if (!rec.pointShots[p]) {
-                rec.pointShots[p] = []
-            }
-            rec.pointShots[p].push(shots[img]);
-        })
-    });
     return rec;
 }
 
@@ -112,7 +95,44 @@ function setupPoints(reconstruction) {
         )
 }
 
-function setupShots(reconstruction) {
+function toggleShot(shot, reconstruction) {
+    console.log('toggleShot', shot)
+    shot.isSelected = !shot.isSelected;
+    refreshShots(reconstruction)
+}
+
+function refreshShots(reconstruction) {
+
+    const line = d3.line()
+        .x(function (d, i) {
+            return scales.x(d[0]);
+        }) // set the x values for the line generator
+        .y(function (d) {
+            return scales.y(d[1]);
+        })
+    elShotCoverage
+        .selectAll('path.shot-coverage')
+        .data(reconstruction.shots)  //.filter(s => s.imageName === 'GOPR3103.jpeg'))
+        .join(
+            function (enter) {
+                enter
+                    .append('path')
+                    .classed('shot-coverage', true)
+                    .attr('name', s => s.imageName)
+                    .attr('d', s => {
+                        const p = [...s.boundaries.path];
+                        p.push(s.boundaries.path[0]);
+                        return line(p);
+                    })
+                    .on('mouseover', s => {
+                        console.log(s.imageName, s.translation)
+                    });
+            },
+            function (update) {
+                update
+                    .classed('is-selected', s => s.isSelected);
+            }
+        );
     elShots
         .selectAll('circle.shot')
         .data(reconstruction.shots)
@@ -122,16 +142,17 @@ function setupShots(reconstruction) {
                     .append('circle')
                     .classed('shot', true)
                     .attr('name', s => s.imageName)
-                    .attr('r', 3)
+                    .attr('r', 7)
                     .attr('cx', s => scales.x(s.translation[0]))
                     .attr('cy', s => scales.y(s.translation[1]))
                     .on('mouseover', s => {
-                        console.log(s)
-                    });
+                        console.log(s.imageName, s.translation)
+                    })
+                    .on('click', s => toggleShot(s, reconstruction));
             },
             function (update) {
                 update
-
+                    .classed('is-selected', s => s.isSelected)
             }
         )
 }
@@ -161,17 +182,29 @@ svg.insert('defs')
     .insert('clipPath')
     .attr('id', 'mapClipping')
     .insert('rect')
-    .attr('width', dimensions.map.width)
-    .attr('height', dimensions.map.height);
+    .attr('x', 3)
+    .attr('y', 3)
+    .attr('width', dimensions.map.width - 6)
+    .attr('height', dimensions.map.height - 6);
 
 const elMapContainer = svg
     .insert('g')
-    .classed('map', true)
     .attr('transform', `translate(${marginAxes},0)`)
-    .style('clip-path', 'url(#mapClipping)');
+    .attr('id', 'map-container')
+    .style('clip-path', 'url(#mapClipping)')
+
+// svg.insert('use')
+//     .attr('clip-path', 'url(#mapClipping)')
+//     .attr('href', '#map-container')
+
+
+elMapContainer.insert('rect')
+    .attr('width', dimensions.map.width)
+    .attr('height', dimensions.map.height)
 
 const elMap =
-    elMapContainer.insert('g');
+    elMapContainer.insert('g')
+        .attr('id', 'map');
 
 const elOrthoImage = elMap.insert('image')
     .attr('href', `${projectDir}/odm_orthophoto.png`);
@@ -180,12 +213,16 @@ const elPoints = elMap
     .insert('g')
     .classed('points', true);
 
+const elShotCoverage = elMap
+    .insert('g')
+    .classed('shot-coverage', true);
+
 const elShots = elMap
     .insert('g')
     .classed('shots', true);
 
-
 const elAxes = {};
+
 elAxes.x = svg
     .insert('g')
     .attr("class", "axis axis--x")
@@ -197,10 +234,10 @@ elAxes.y = svg
 
 const zoom = d3.zoom()
     .on('zoom', handleZoom);
-elMapContainer.call(zoom);
+elMap.call(zoom);
 
 function handleZoom() {
-    elMapContainer.attr('transform', d3.event.transform);
+    elMap.attr('transform', d3.event.transform);
     elAxes.x.call(axes.x.scale(d3.event.transform.rescaleX(scales.x)));
     elAxes.y.call(axes.y.scale(d3.event.transform.rescaleY(scales.y)));
 }
@@ -210,21 +247,20 @@ function initScales(reconstruction) {
         return l / (domain[1] - domain[0])
     }
 
-    const xd = ratio(dimensions.map.width - 20, reconstruction.coords_domain.x);
-    const yd = ratio(dimensions.map.height - 20, reconstruction.coords_domain.y);
-    let xDomain = reconstruction.coords_domain.x;
-    let yDomain = reconstruction.coords_domain.y;
+    const xd = ratio(dimensions.map.width - 20, reconstruction.coordsDomain.x);
+    const yd = ratio(dimensions.map.height - 20, reconstruction.coordsDomain.y);
+    let xDomain = reconstruction.coordsDomain.x;
+    let yDomain = reconstruction.coordsDomain.y;
     if (yd < xd) {
-        const padding = (xd / yd - 1) * (reconstruction.coords_domain.x[1] - reconstruction.coords_domain.x[0]) / 2;
-        console.log('x padding', padding)
-        xDomain = [reconstruction.coords_domain.x[0] - padding, reconstruction.coords_domain.x[1] + padding]
+        const padding = (xd / yd - 1) * (reconstruction.coordsDomain.x[1] - reconstruction.coordsDomain.x[0]) / 2;
+        xDomain = [reconstruction.coordsDomain.x[0] - padding, reconstruction.coordsDomain.x[1] + padding]
     } else {
-        const padding = (yd / xd - 1) * (reconstruction.coords_domain.y[1] - reconstruction.coords_domain.y[0]) / 2
-        yDomain = [reconstruction.coords_domain.y[0] - padding, reconstruction.coords_domain.y[1] + padding]
+        const padding = (yd / xd - 1) * (reconstruction.coordsDomain.y[1] - reconstruction.coordsDomain.y[0]) / 2
+        yDomain = [reconstruction.coordsDomain.y[0] - padding, reconstruction.coordsDomain.y[1] + padding]
     }
 
     scales.x.domain(xDomain);
-    scales.y.domain(yDomain);
+    scales.y.domain([yDomain[1], yDomain[0]]);
 
     axes.x = d3.axisBottom(scales.x);
     axes.y = d3.axisLeft(scales.y);

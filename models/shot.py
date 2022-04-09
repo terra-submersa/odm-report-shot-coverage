@@ -1,6 +1,56 @@
+import numpy as np
 from scipy.spatial.transform import Rotation as R, Rotation
 
 from models.camera import Camera
+
+
+class ShotBoundaries:
+    path: [(float, float)]
+
+    __max_val = 10000000
+
+    def __init__(
+            self,
+            path: [(float, float)],
+    ):
+        self.path = path
+
+    def to_json(self) -> dict:
+        return {
+            'path': self.path
+        }
+
+    def __repr__(self):
+        return '[%f, %f] x [%f, %f]' % (self.x_min, self.x_max, self.y_min, self.y_max)
+
+
+def shot_boundaries_from_points(points: list[(float, float)]) -> ShotBoundaries:
+    midpoint = (sum([p[0] for p in points])/len(points),sum([p[0] for p in points])/len(points))
+
+    leftmost = max(points, key=lambda p: (p[0]-midpoint[0])*(p[0]-midpoint[0]) + (p[1]-midpoint[1])*(p[1]-midpoint[1]))
+    rightmost = max(points, key=lambda p: (p[0]-leftmost[0])*(p[0]-leftmost[0]) + (p[1]-leftmost[1])*(p[1]-leftmost[1]))
+    ft = leftmost
+    d_ft = 0
+    fl = leftmost
+    d_fl = 0
+    am = rightmost[0] - leftmost[0]
+    bm = rightmost[1] - leftmost[1]
+    for p in points:
+        a1 = p[0] - leftmost[0]
+        b1 = p[1] - leftmost[1]
+        a2 = p[0] - rightmost[0]
+        b2 = p[1] - rightmost[1]
+
+        d = np.sqrt(a1 * a1 + b1 * b1) + np.sqrt(a2 * a2 + b2 * b2)
+        if a1 * bm - b1 * am >= 0:
+            if d > d_ft:
+                ft = p
+                d_ft = d
+        else:
+            if d > d_fl:
+                fl = p
+                d_fl = d
+    return ShotBoundaries([leftmost, ft, rightmost, fl])
 
 
 class Shot:
@@ -9,6 +59,7 @@ class Shot:
     translation: (float, float, float)
     camera: Camera
     _transfo_rotation: Rotation
+    boundaries: ShotBoundaries
 
     @property
     def rotation(self) -> (float, float, float):
@@ -18,17 +69,10 @@ class Shot:
     def rotation(self, new_rotation: (float, float, float)):
         self._rotation = new_rotation
         (r_x, r_y, r_z) = new_rotation
-        # print(np.sqrt(r_x*r_x+r_y*r_y+r_z*r_z))
-
         self._transfo_rotation = R.from_rotvec([r_x, r_y, r_z])
 
-        # (r_x, r_y, r_z) = (0, 0, np.pi)
-
-        # self._transfo_rotation = R.from_euler('xyz', [0, 0, 0 ], degrees=True)
-        # $self._transfo_rotation = R.from_rotvec([np.pi/np.sqrt(2), np.pi/np.sqrt(2), 0])
-
-        # print(self._transfo_rotation.as_euler('xyz'))
-        # print(self._transfo_rotation.as_rotvec())
+    def boundaries_from_points(self, points: list[(float, float)]):
+        self.boundaries = shot_boundaries_from_points(points)
 
     def __repr__(self):
         return '%s translation=(%.2f, %.2f, %.2f) rotation=(%.2f, %.2f, %.2f)' % (
@@ -40,9 +84,11 @@ class Shot:
     def to_json(self):
         return {
             'imageName': self.image_name,
+            'camera': self.camera.to_json(),
             'rotation': self._rotation,
             'translation': self.translation,
             'camera': self.camera.name,
+            'boundaries': self.boundaries.to_json()
         }
 
     def camera_relative_coordinates(self, abs_coords: (float, float, float)) -> (float, float, float):
@@ -73,7 +119,7 @@ class Shot:
         return self.camera.perspective_pixel(rel_coords)
 
 
-class ShotOrthoBoundaries:
+class Boundaries:
     x_min: float
     x_max: float
     y_min: float
@@ -87,11 +133,14 @@ class ShotOrthoBoundaries:
 
     def to_json(self) -> dict:
         return {
-            'x_min': self.x_min,
-            'x_max': self.x_max,
-            'y_min': self.y_min,
-            'y_max': self.y_max,
+            'xMin': self.x_min,
+            'xMax': self.x_max,
+            'yMin': self.y_min,
+            'yMax': self.y_max,
         }
+
+    def __repr__(self):
+        return '[%f, %f] x [%f, %f]' % (self.x_min, self.x_max, self.y_min, self.y_max)
 
 
 def json_parse_shot(image_name: str, el: dict, cameras: dict[str, Camera]) -> Shot:
