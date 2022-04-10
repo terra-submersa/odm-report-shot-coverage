@@ -28,11 +28,16 @@ class Test(TestCase):
         given = json.loads(json_str)
 
         got = json_parse_camera('gopro8', given)
-        self.assertEqual(3000, got.width)
-        self.assertEqual(4000, got.height)
-        self.assertEqual(0.5207834102328533, got.focal)
-        self.assertEqual(-0.10638507280457302, got.k1)
-        self.assertEqual(0.06769290794144624, got.k2)
+        self.assertEqual('gopro8', got.name, 'name')
+        self.assertEqual('brown', got.projection_type, 'project_type')
+        self.assertEqual(3000, got.width, 'width')
+        self.assertEqual(4000, got.height, 'height')
+        self.assertEqual(0.5207834102328533, got.focal, 'focal')
+        self.assertEqual(-0.10638507280457302, got.k1, 'k1')
+        self.assertEqual(0.06769290794144624, got.k2, 'k2')
+        self.assertEqual(-0.005369531191619131, got.k3, 'k3')
+        self.assertEqual(-0.0009394968204580917, got.p1, 'p1')
+        self.assertEqual(-0.0007005575451251272, got.p2, 'p2')
 
     # GoPro in linear mode has a horizontal FOV of 86.7º
     # I've adapted it to 89.9 (water diffraction ??), based on trial an error to fit the camera.json specs

@@ -3,7 +3,7 @@ from unittest import TestCase
 import numpy as np
 
 from models.point import Point
-from models.shot import Shot, ShotBoundaries, shot_boundaries_from_points
+from models.shot import Shot, shot_boundaries_from_points
 
 
 class TestShot(TestCase):
@@ -75,7 +75,7 @@ class TestShotBoundaries(TestCase):
     def test_extend_one(self):
         points = [(5, 7)]
 
-        sb = shot_boundaries_from_points(points)
+        sb = shot_boundaries_from_points(points, 4)
 
         self.assertEqual([(5, 7), (5, 7), (5, 7), (5, 7)], sb.path)
 
@@ -105,9 +105,9 @@ class TestShotBoundaries(TestCase):
             (8, 9),
         ]
 
-        sb = shot_boundaries_from_points(points)
+        sb = shot_boundaries_from_points(points, 4)
 
-        self.assertEqual([(5, 7), (6, 5), (9, 7), (8, 9)], sb.path)
+        self.assertEqual([(7, 5), (8, 9), (7, 9), (6, 5)], sb.path)
 
     def test_shot_boundaries_from_points_b(self):
         # 9 .........
@@ -128,23 +128,17 @@ class TestShotBoundaries(TestCase):
             (9, 7),
             (10, 7),
         ]
-        sb = shot_boundaries_from_points(points)
+        sb = shot_boundaries_from_points(points, 4)
 
-        self.assertEqual([(6, 5), (8, 5), (10, 7), (8, 7)], sb.path)
+        self.assertEqual([(8, 5), (10, 7), (8, 7), (6, 5)], sb.path)
 
     def test_shot_boundaries_from_points_3087(self):
-        # 9 .........
-        # 8 .........
-        # 7 ....XxX..
-        # 6 ...xxx...
-        # 5 ..XxX....
-        #   456789012
 
         points = [(0, -9, -10), (0, -6, -10), (0, -3, -10), (0, 0, -10), (3, -12, -10), (3, -9, -10), (3, -6, -10),
                   (3, -3, -10), (3, 0, -10), (3, 3, -10), (6, -12, -10), (6, -9, -10), (6, -6, -10), (6, -3, -10),
                   (6, 0, -10), (6, 3, -10), (6, 6, -10), (9, -12, -10), (9, -9, -10), (9, -6, -10), (9, -3, -10),
                   (9, 0, -10), (9, 3, -10), (9, 6, -10), (12, -12, -10), (12, -9, -10), (12, -6, -10), (12, -3, -10),
                   (12, 0, -10), (12, 3, -10), (12, 6, -10), (12, 9, -10), (15, 6, -10), (15, 9, -10), (15, 12, -10)]
-        sb = shot_boundaries_from_points(points)
+        sb = shot_boundaries_from_points(points, 8)
 
-        self.assertEqual([(6, 5), (8, 5), (10, 7), (8, 7)], sb.path)
+        self.assertEqual([(12, -12), (12, -6), (12, 0), (15, 12), (6, 6), (0, 0), (0, -9), (3, -12)], sb.path)

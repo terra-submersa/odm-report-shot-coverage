@@ -1,4 +1,3 @@
-import json
 from unittest import TestCase
 
 from models.reconstruction import parse_reconstruction

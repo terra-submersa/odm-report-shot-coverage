@@ -48,7 +48,7 @@ class Wavefront25D:
                 self.paving_facets[k[0]][k[1]].append(i_facet)
 
 
-_facet_pattern = re.compile("""f (\d+)/\d+/\d+ (\d+)/\d+/\d+ (\d+)/\d+/\d+""")
+_facet_pattern = re.compile('f (\\d+)/\\d+/\\d+ (\\d+)/\\d+/\\d+ (\\d+)/\\d+/\\d+')
 
 
 def _parse_facet_vertices(facet_str: str):
@@ -72,13 +72,13 @@ def _paving_sizes(boundaries: Boundaries, min_blocks: int) -> (int, int):
 def parse_wavefront_25d_obj(filename):
     wf = Wavefront25D()
     with open(filename) as fd:
-        for line in [l for l in fd.readlines() if l.startswith('v ')]:
+        for line in [ln for ln in fd.readlines() if ln.startswith('v ')]:
             v = line.replace('v ', '').split(' ')
             (x, y, z) = float(v[0]), float(v[1]), float(v[2])
             wf.points.append((x, y, z))
 
     with open(filename) as fd:
-        for line in [l for l in fd.readlines() if l.startswith('f ')]:
+        for line in [ln for ln in fd.readlines() if ln.startswith('f ')]:
             wf.facets.append(_parse_facet_vertices(line.strip()))
 
     wf._compute_boundaries()
@@ -86,12 +86,3 @@ def parse_wavefront_25d_obj(filename):
     wf._compute_paving_facets()
 
     return wf
-
-
-if __name__ == '__main__':
-    project_dir = '/Users/alex/terra-submersa/tools/odm/datasets/lambayana-pavements-20210810/code'
-    filename = '%s/odm_texturing_25d/odm_textured_model_geo.obj' % project_dir
-    wf25d = parse_wavefront_25d_obj(filename)
-    print(wf25d.boundaries)
-
-    exit(0)

@@ -2,7 +2,7 @@ const marginAxes = 50;
 const dimensions = {
     total: {
         width: 500,
-        height: 700
+        height: window.innerHeight-100
     }
 }
 

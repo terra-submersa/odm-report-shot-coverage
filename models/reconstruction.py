@@ -2,11 +2,12 @@ import geojson
 from scipy import stats
 
 from models.camera import Camera
-from models.shot import Shot, Boundaries, ShotBoundaries, shot_boundaries_from_points
+from models.shot import Shot, shot_boundaries_from_points
 from models.wavefront_25d import Wavefront25D, parse_wavefront_25d_obj
 
 
 class Reconstruction:
+    cameras: dict[str, Camera] = {}
     _shots: list[Shot] = []
     mesh = Wavefront25D
 
@@ -23,6 +24,7 @@ class Reconstruction:
 
     def to_json(self) -> dict:
         return {
+            'cameras': {n: c.to_json() for n, c in self.cameras},
             'shots': [s.to_json() for s in self.shots],
             # 'mesh': self.mesh.to_json(),
             'boundaries': self.mesh.boundaries.to_json(),
@@ -33,27 +35,18 @@ class Reconstruction:
         From shots and points, fill the shot_boundaries
         :rtype: None
         """
-        self.mesh.points=[]
-        for i in range(-15, 20, 1):
-            for j in range(-15, 20, 1):
-                self.mesh.points.append((i, j, -10))
+        # self.mesh.points=[]
+        # for i in range(-15, 20, 1):
+        #     for j in range(-15, 20, 1):
+        #         self.mesh.points.append((i, j, -10))
 
         for shot in self.shots:
 
             points = []
             for i, point in enumerate(self.mesh.points):
                 pixel = shot.camera_pixel(point)
-                inside = False
                 if shot.camera.in_frame(pixel):
                     points.append(point)
-                    inside=True
-                if shot.image_name == 'GOPR3087.jpeg':
-                    print('%.2f\t%.2f\t->\t%.2f\t%.2f\t%s' % (point[0], point[1], pixel[0], pixel[1], inside))
-            if shot.image_name == 'GOPR3087.jpeg':
-                for p in points:
-                    print('%.2f\t%.2f'%(p[0], p[1]))
-
-                print(points)
 
             shot.boundaries = shot_boundaries_from_points(points)
 

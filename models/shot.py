@@ -24,33 +24,31 @@ class ShotBoundaries:
         return '[%f, %f] x [%f, %f]' % (self.x_min, self.x_max, self.y_min, self.y_max)
 
 
-def shot_boundaries_from_points(points: list[(float, float)]) -> ShotBoundaries:
-    midpoint = (sum([p[0] for p in points])/len(points),sum([p[0] for p in points])/len(points))
+def shot_boundaries_from_points(points: list[(float, float)], nb_path_points: int = 36) -> ShotBoundaries:
+    midpoint = (sum([p[0] for p in points]) / len(points), sum([p[1] for p in points]) / len(points))
+    dist_slices = [0 for i in range(nb_path_points)]
+    furthest_slices = [midpoint for i in range(nb_path_points)]
 
-    leftmost = max(points, key=lambda p: (p[0]-midpoint[0])*(p[0]-midpoint[0]) + (p[1]-midpoint[1])*(p[1]-midpoint[1]))
-    rightmost = max(points, key=lambda p: (p[0]-leftmost[0])*(p[0]-leftmost[0]) + (p[1]-leftmost[1])*(p[1]-leftmost[1]))
-    ft = leftmost
-    d_ft = 0
-    fl = leftmost
-    d_fl = 0
-    am = rightmost[0] - leftmost[0]
-    bm = rightmost[1] - leftmost[1]
-    for p in points:
-        a1 = p[0] - leftmost[0]
-        b1 = p[1] - leftmost[1]
-        a2 = p[0] - rightmost[0]
-        b2 = p[1] - rightmost[1]
-
-        d = np.sqrt(a1 * a1 + b1 * b1) + np.sqrt(a2 * a2 + b2 * b2)
-        if a1 * bm - b1 * am >= 0:
-            if d > d_ft:
-                ft = p
-                d_ft = d
+    def slice_index_dist(p: (float, float)):
+        alpha = None
+        vx = p[0] - midpoint[0]
+        vy = p[1] - midpoint[1]
+        if vx == 0:
+            alpha = np.pi / 2 if vy >= 0 else - np.pi / 2
         else:
-            if d > d_fl:
-                fl = p
-                d_fl = d
-    return ShotBoundaries([leftmost, ft, rightmost, fl])
+            alpha = np.arctan(vy / vx)
+        i_slice = int(nb_path_points / 2 * (alpha / np.pi + 0.5))
+        if vx < 0:
+            i_slice += int(nb_path_points / 2)
+        return i_slice, vx * vx + vy * vy
+
+    for p in points:
+        (i, d) = slice_index_dist(p)
+        if d > dist_slices[i]:
+            furthest_slices[i] = p
+            dist_slices[i] = d
+
+    return ShotBoundaries([(p[0], p[1]) for p in furthest_slices])
 
 
 class Shot:
@@ -84,7 +82,6 @@ class Shot:
     def to_json(self):
         return {
             'imageName': self.image_name,
-            'camera': self.camera.to_json(),
             'rotation': self._rotation,
             'translation': self.translation,
             'camera': self.camera.name,
