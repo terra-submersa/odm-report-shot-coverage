@@ -139,7 +139,6 @@ function refreshShots(reconstruction) {
                     .attr('cy', s => scales.y(s.translation[1]))
                     .on('mouseover', s => {
                         showShot(s);
-                        console.log(s.imageName, s.translation)
                     })
                     .on('click', s => toggleShot(s, reconstruction));
             },
@@ -151,7 +150,6 @@ function refreshShots(reconstruction) {
 }
 
 function showShot(shot) {
-    console.log(shot.camera)
     const el = d3.select('#selected-camera');
     el.style('display', 'inherit');
     el.select('.image-name').text(shot.imageName);
