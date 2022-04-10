@@ -30,3 +30,7 @@ path.shot-coverage {
 path.shot-coverage.is-selected {
   display: inherit;
 }
+
+.numbers{
+  font-family: monospace;
+}

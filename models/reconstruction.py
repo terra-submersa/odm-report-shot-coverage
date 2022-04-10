@@ -1,7 +1,7 @@
 import geojson
 from scipy import stats
 
-from models.camera import Camera
+from models.camera import Camera, json_parse_camera
 from models.shot import Shot, shot_boundaries_from_points
 from models.wavefront_25d import Wavefront25D, parse_wavefront_25d_obj
 
@@ -24,7 +24,7 @@ class Reconstruction:
 
     def to_json(self) -> dict:
         return {
-            'cameras': {n: c.to_json() for n, c in self.cameras},
+            'cameras': {n: c.to_json() for n, c in self.cameras.items()},
             'shots': [s.to_json() for s in self.shots],
             # 'mesh': self.mesh.to_json(),
             'boundaries': self.mesh.boundaries.to_json(),
@@ -35,13 +35,8 @@ class Reconstruction:
         From shots and points, fill the shot_boundaries
         :rtype: None
         """
-        # self.mesh.points=[]
-        # for i in range(-15, 20, 1):
-        #     for j in range(-15, 20, 1):
-        #         self.mesh.points.append((i, j, -10))
 
         for shot in self.shots:
-
             points = []
             for i, point in enumerate(self.mesh.points):
                 pixel = shot.camera_pixel(point)
@@ -49,6 +44,12 @@ class Reconstruction:
                     points.append(point)
 
             shot.boundaries = shot_boundaries_from_points(points)
+
+    def find_camera_by_width_height(self, width: int, height: int) -> Camera:
+        cs = [c for c in self.cameras.values() if c.width == width and c.height == height]
+        if len(cs) != 1:
+            raise Exception('Not exactly one camera found with size %s x %s' % (width, height))
+        return cs[0]
 
 
 class ReconstructionCollection:
@@ -72,17 +73,18 @@ def lin_reg(pairs: list[(float, float)]) -> (float, float, float, float):
 
 def parse_reconstruction(path: str) -> Reconstruction:
     reconstruction = Reconstruction()
-    with open('%s/odm_report/shots.geojson' % path) as fd:
+    with open('%s/cameras.json' % path, 'r') as fd:
+        cameras_json = geojson.load(fd)
+        for n, j in cameras_json.items():
+            camera = json_parse_camera(n, j)
+            reconstruction.add_camera(n, camera)
+
+    with open('%s/odm_report/shots.geojson' % path, 'r') as fd:
         shots_geojson = geojson.load(fd)
         for feat in shots_geojson['features']:
-            props = feat['properties']
-            camera = Camera()
-            camera.name = '-'
-            camera.focal = props['focal']
-            camera.width = props['width']
-            camera.height = props['height']
             shot = Shot()
-            shot.camera = camera
+            props = feat['properties']
+            shot.camera = reconstruction.find_camera_by_width_height(props['width'], props['height'])
             shot.image_name = props['filename']
             shot.translation = props['translation']
             shot.rotation = props['rotation']

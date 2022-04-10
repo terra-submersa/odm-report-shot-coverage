@@ -5,3 +5,6 @@ __pycache__
 /.dcignore
 /opensfm-camera-coverage.iml
 /tmp/
+/web/data/
+/web/data/
+/web/images/

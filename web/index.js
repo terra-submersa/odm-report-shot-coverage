@@ -2,7 +2,7 @@ const marginAxes = 50;
 const dimensions = {
     total: {
         width: 500,
-        height: window.innerHeight-100
+        height: window.innerHeight - 100
     }
 }
 
@@ -44,8 +44,10 @@ function parseReconstruction(json) {
     const rec = {
         points: json.points,
         shots: json.shots,
+        cameras: json.cameras,
         boundaries: json.boundaries,
     };
+    rec.shots.forEach(s => s.camera = rec.cameras[s.camera]);
 
     rec.shots.forEach(s => s.isSelected = false);
     rec.coordsDomain = {
@@ -80,13 +82,7 @@ function setupPoints(reconstruction) {
                     .classed('point', true)
                     .attr('r', 0.3)
                     .attr('cx', p => scales.x(p[0]))
-                    .attr('cy', p => scales.y(p[1]))
-                    .on('mouseover', p => {
-                        selectedShots.length = 0;
-                        _.each(reconstruction.pointShots[p.id], s => selectedShots.push(s));
-                        updateShots();
-                        updateSelectedPoint(p);
-                    });
+                    .attr('cy', p => scales.y(p[1]));
             },
             function (update) {
                 update
@@ -96,7 +92,6 @@ function setupPoints(reconstruction) {
 }
 
 function toggleShot(shot, reconstruction) {
-    console.log('toggleShot', shot)
     shot.isSelected = !shot.isSelected;
     refreshShots(reconstruction)
 }
@@ -106,13 +101,13 @@ function refreshShots(reconstruction) {
     const line = d3.line()
         .x(function (d, i) {
             return scales.x(d[0]);
-        }) // set the x values for the line generator
+        })
         .y(function (d) {
             return scales.y(d[1]);
         })
     elShotCoverage
         .selectAll('path.shot-coverage')
-        .data(reconstruction.shots)  //.filter(s => s.imageName === 'GOPR3103.jpeg'))
+        .data(reconstruction.shots)
         .join(
             function (enter) {
                 enter
@@ -123,9 +118,6 @@ function refreshShots(reconstruction) {
                         const p = [...s.boundaries.path];
                         p.push(s.boundaries.path[0]);
                         return line(p);
-                    })
-                    .on('mouseover', s => {
-                        console.log(s.imageName, s.translation)
                     });
             },
             function (update) {
@@ -146,6 +138,7 @@ function refreshShots(reconstruction) {
                     .attr('cx', s => scales.x(s.translation[0]))
                     .attr('cy', s => scales.y(s.translation[1]))
                     .on('mouseover', s => {
+                        showShot(s);
                         console.log(s.imageName, s.translation)
                     })
                     .on('click', s => toggleShot(s, reconstruction));
@@ -157,24 +150,14 @@ function refreshShots(reconstruction) {
         )
 }
 
-function updateShots(reconstruction) {
-    d3.select('#point-shots-list')
-        .selectAll('li')
-        .data(selectedShots, s => s.imageName)
-        .join(
-            enter =>
-                enter
-                    .append('li')
-                    .text(s => s.imageName),
-            update => update,
-            exit => exit.remove()
-        )
-}
-
-function updateSelectedPoint(p) {
-    const el = d3.select('#selected-point');
-    el.select('.id').text(p.id);
-    el.select('.coordinates').text(`${p[0].toFixed(4)}, ${p[1].toFixed(4)}, ${p[2].toFixed(4)}`);
+function showShot(shot) {
+    console.log(shot.camera)
+    const el = d3.select('#selected-camera');
+    el.style('display', 'inherit');
+    el.select('.image-name').text(shot.imageName);
+    el.select('img.snapshot').attr('src', 'images/' + shot.imageName);
+    el.select('.coordinates').text(`${shot.translation[0].toFixed(2)}, ${shot.translation[1].toFixed(2)}, ${shot.translation[1].toFixed(2)}`);
+    el.select('.rotation').text(`${(shot.rotation[0] * 180 / Math.PI).toFixed(2)}°, ${(shot.rotation[1] * 180 / Math.PI).toFixed(2)}°, ${(shot.rotation[1] * 180 / Math.PI).toFixed(2)}°`);
 
 }
 
@@ -192,11 +175,6 @@ const elMapContainer = svg
     .attr('transform', `translate(${marginAxes},0)`)
     .attr('id', 'map-container')
     .style('clip-path', 'url(#mapClipping)')
-
-// svg.insert('use')
-//     .attr('clip-path', 'url(#mapClipping)')
-//     .attr('href', '#map-container')
-
 
 elMapContainer.insert('rect')
     .attr('width', dimensions.map.width)
