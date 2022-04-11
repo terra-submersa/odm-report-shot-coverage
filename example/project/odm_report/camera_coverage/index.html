@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>OpenSFM shot coverage</title>
+  <title>ODM shot coverage</title>
   <script src="https://d3js.org/d3.v5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
           integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
@@ -25,9 +25,6 @@
       <p>
         Mouse over the camera (blue dot) and click to see the picture coverage.
       </p>
-      <p>
-        NB: there are still a few hiccups in the computations.
-      </p>
     </div>
     <div id="selected-camera" style="display: none">
       <div class="card">
@@ -46,12 +43,19 @@
       </div>
     </div>
 
-    </ul>
+    <div class="doc">
+      <p>
+        Code by Alexandre Masselot, available on <a href="https://github.com/terra-submersa/odm-report-camera-coverage">github</a>
+      </p>
+    </div>
   </div>
 </div>
 
 </body>
 <footer>
-  <script src="index.js"/>
+  <script type="text/javascript" src="index.js"/>
+  <script type="text/javascript">
+    console.log('PAF')
+  </script>
 </footer>
 </html>
