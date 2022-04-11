@@ -18,6 +18,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+      - name: ls
+        run: |
+          ls example/project/odm_report/camera_coverage
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
