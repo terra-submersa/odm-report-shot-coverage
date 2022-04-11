@@ -12,4 +12,28 @@ circle.point {
 
 circle.shot {
   fill: royalblue;
+  stroke-width: 2;
+}
+
+circle.shot.is-selected {
+  stroke: orangered;
+}
+
+path.shot-coverage {
+  display: none;
+  fill: royalblue;
+  fill-opacity: 0.03;
+  stroke: orangered;
+  stroke-width: 1;
+}
+
+path.shot-coverage.is-selected {
+  display: inherit;
+}
+
+img.snapshot{
+  width: 400px;
+}
+.numbers{
+  font-family: monospace;
 }

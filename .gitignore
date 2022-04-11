@@ -4,3 +4,7 @@ __pycache__
 /venv/
 /.dcignore
 /opensfm-camera-coverage.iml
+/tmp/
+/web/data/
+/web/data/
+/web/images/

@@ -1,10 +1,46 @@
 class Camera:
     name: str
-    width: int
-    height: int
+    projection_type: str = None
+    _width: int = None
+    _height: int = None
+    _width_rel_max = None
+    _height_rel_max = None
     focal: float
-    k1: float
-    k2: float
+    c_x: float = 0
+    c_y: float = 0
+    k1: float = 0
+    k2: float = 0
+    k3: float = 0
+    p_1: float = 0
+    p_2: float = 0
+
+    @property
+    def width(self) -> int:
+        return self._width
+
+    @property
+    def height(self) -> int:
+        return self._height
+
+    @width.setter
+    def width(self, new_width: int):
+        self._width = new_width
+        self.__compute_ref_max()
+
+    @height.setter
+    def height(self, new_height: int):
+        self._height = new_height
+        self.__compute_ref_max()
+
+    def __compute_ref_max(self):
+        if self._width is None or self._height is None:
+            return
+        if self._width >= self.height:
+            self._width_rel_max = 0.5
+            self._height_rel_max = 0.5 * self._height / self._width
+        else:
+            self._height_rel_max = 0.5
+            self._width_rel_max = 0.5 / self._height * self._width
 
     def perspective_pixel(self, rel_coords: (float, float, float)) -> (float, float):
         """
@@ -32,22 +68,21 @@ class Camera:
             'k2': self.k2,
         }
 
-    @staticmethod
-    def in_frame(pixel: (float, float)) -> bool:
-        return -0.5 <= pixel[0] <= 0.5 and -0.5 <= pixel[1] <= 0.5
+    def in_frame(self, pixel: (float, float)) -> bool:
+        return -self._width_rel_max <= pixel[0] <= self._width_rel_max and \
+               -self._height_rel_max <= pixel[1] <= self._height_rel_max
 
 
 def json_parse_camera(name: str, el: dict) -> Camera:
     camera = Camera()
     camera.name = name
-    camera.width = el['width']
-    camera.height = el['height']
+    for k in ['width', 'height', 'projection_type', 'c_x', 'c_Y', 'k1', 'k2', 'k3', 'p1', 'p2']:
+        camera.__setattr__(k, el.get(k, 0))
     if 'focal' in el:
         camera.focal = el['focal']
     else:
         if el['focal_x'] != el['focal_y']:
             raise Exception('Cannot survive different focal x/y %f/%f' % (el['focal_x'], el['focal_y']))
         camera.focal = el['focal_x']
-    camera.k1 = el['k1']
-    camera.k2 = el['k2']
+
     return camera

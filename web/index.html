@@ -18,13 +18,32 @@
     </div>
   </div>
   <div class="column is-one-quarter">
-    <h3>Point</h3>
-    <div id="selected-point">
-      <div><span>id: </span><span class="id"></span></div>
-      <div><span>coordinates: </span><span class="coordinates"></span></div>
+    <div class="doc">
+      <p class="title is-3">Open Drone Map</p>
+      <p class="title is-4">Shot coverage</p>
+      <p>
+        Mouse over the camera (blue dot) and click to see the picture coverage.
+      </p>
+      <p>
+        NB: there are still a few hiccups in the computations.
+      </p>
     </div>
-    <h3>Shots</h3>
-    <ul id="point-shots-list">
+    <div id="selected-camera" style="display: none">
+      <div class="card">
+        <div class="card-image">
+            <img class="snapshot" >
+        </div>
+        <div class="card-content">
+          <div class="media">
+            <div class="media-content">
+              <p class="title is-4 image-name"></p>
+              <p><span class="bold">Coordinates: </span><span class="coordinates numbers"></span></p>
+              <p><span class="bold">Rotation: </span><span class="rotation numbers"></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     </ul>
   </div>
