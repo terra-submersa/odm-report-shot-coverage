@@ -45,7 +45,7 @@ def copy_web_app(target_dir: str):
 
 if __name__ == '__main__':
     project_dir = 'example/project'
-    out_dir = project_dir + '/odm_report/camera-coverage'
+    out_dir = project_dir + '/odm_report/camera_coverage'
     Path(out_dir + '/data').mkdir(parents=True, exist_ok=True)
 
     copy_web_app(out_dir)

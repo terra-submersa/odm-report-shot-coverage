@@ -98,7 +98,7 @@ class Shot:
         """
         tc = abs_coords[0] - self.translation[0], abs_coords[1] - self.translation[1], abs_coords[2] - self.translation[
             2]
-        rc = self._transfo_rotation.apply(tc, inverse=True)
+        rc = self._transfo_rotation.apply(tc, inverse=False)
         return rc[0], rc[1], rc[2]
         # rc = self._transfo_rotation.apply(abs_coords, inverse=True)
         # tc = rc[0] - self.translation[0], rc[1] - self.translation[1], rc[2] - self.translation[2]
