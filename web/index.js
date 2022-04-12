@@ -155,7 +155,21 @@ function loadData() {
         el.select('.image-name').text(shot.imageName);
         el.select('img.snapshot').attr('src', 'images/' + shot.imageName);
         el.select('.coordinates').text(`${shot.translation[0].toFixed(2)}, ${shot.translation[1].toFixed(2)}, ${shot.translation[1].toFixed(2)}`);
-        el.select('.rotation').text(`${(shot.rotation[0] * 180 / Math.PI).toFixed(2)}°, ${(shot.rotation[1] * 180 / Math.PI).toFixed(2)}°, ${(shot.rotation[1] * 180 / Math.PI).toFixed(2)}°`);
+        const euler = shot.rotationEulerXYZ.map(x => (x * 180 / Math.PI).toFixed(2))
+        el.select('.rotation').text(`${euler[0]}°, ${euler[1]}°, ${euler[2]}°`);
+
+        const elWidth = el.node().clientWidth * 0.9;
+        const {width, height} = shot.originalDimensions
+        const alpha = Math.sqrt(width * width + height * height) / elWidth;
+        const widthImage = width / alpha;
+        const heightImage = height / alpha;
+        el.select('.rotator')
+            .style('width', `${elWidth}px`)
+            .style('height', `${elWidth}px`);
+        el.select('img.snapshot')
+            .style('transform', `translate(${elWidth / 2 - widthImage / 2}px, ${elWidth / 2 - heightImage / 2}px) rotate(-${euler[2]}deg)`)
+            .style('width', `${widthImage}px`)
+            .style('height', `${heightImage}px`);
 
     }
 
@@ -244,4 +258,5 @@ function loadData() {
         elAxes.y.call(axes.y);
     }
 }
+
 loadData();

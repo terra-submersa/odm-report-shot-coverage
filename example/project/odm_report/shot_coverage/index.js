@@ -150,12 +150,14 @@ function loadData() {
     }
 
     function showShot(shot) {
+        console.log(shot)
         const el = d3.select('#selected-camera');
         el.style('display', 'inherit');
         el.select('.image-name').text(shot.imageName);
         el.select('img.snapshot').attr('src', 'images/' + shot.imageName);
         el.select('.coordinates').text(`${shot.translation[0].toFixed(2)}, ${shot.translation[1].toFixed(2)}, ${shot.translation[1].toFixed(2)}`);
-        el.select('.rotation').text(`${(shot.rotation[0] * 180 / Math.PI).toFixed(2)}°, ${(shot.rotation[1] * 180 / Math.PI).toFixed(2)}°, ${(shot.rotation[1] * 180 / Math.PI).toFixed(2)}°`);
+        const euler = shot.rotationEulerXYZ.map(x => (x * 180 / Math.PI).toFixed(2))
+        el.select('.rotation').text(`${euler[0]}°, ${euler[1]}°, ${euler[2]}°`);
 
     }
 
@@ -244,4 +246,5 @@ function loadData() {
         elAxes.y.call(axes.y);
     }
 }
+
 loadData();

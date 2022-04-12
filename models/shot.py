@@ -54,6 +54,7 @@ def shot_boundaries_from_points(points: list[(float, float)], nb_path_points: in
 class Shot:
     image_name: str
     _rotation: (float, float, float)
+    rotation_euler_xyz = (float, float, float)
     translation: (float, float, float)
     camera: Camera
     _transfo_rotation: Rotation
@@ -68,6 +69,8 @@ class Shot:
         self._rotation = new_rotation
         (r_x, r_y, r_z) = new_rotation
         self._transfo_rotation = R.from_rotvec([r_x, r_y, r_z])
+        euler =  self._transfo_rotation.as_euler('xyz')
+        self.rotation_euler_xyz = (euler[0], euler[1], euler[2])
 
     def boundaries_from_points(self, points: list[(float, float)]):
         self.boundaries = shot_boundaries_from_points(points)
@@ -82,7 +85,12 @@ class Shot:
     def to_json(self):
         return {
             'imageName': self.image_name,
+            'originalDimensions':{
+                'width': self.camera.width,
+                'height': self.camera.height,
+            },
             'rotation': self._rotation,
+            'rotationEulerXYZ': self.rotation_euler_xyz,
             'translation': self.translation,
             'camera': self.camera.name,
             'boundaries': self.boundaries.to_json()
