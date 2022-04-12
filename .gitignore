@@ -5,6 +5,8 @@ __pycache__
 /.dcignore
 /opensfm-camera-coverage.iml
 /tmp/
-/web/data/
-/web/data/
-/web/images/
+/src/odm_report_shot_coverage/scripts/web/data/
+/src/odm_report_shot_coverage/scripts/web/data/
+/src/odm_report_shot_coverage/scripts/web/images/
+/dist
+*.egg-info

@@ -2,15 +2,15 @@ import re
 
 import numpy as np
 
-from models.shot import Boundaries
+from odm_report_shot_coverage.models.shot import Boundaries
 
 
 class Wavefront25D:
-    points: list[(float, float, float)] = []
-    facets: list[(int, int, int)] = []
+    points: 'list[(float, float, float)]' = []
+    facets: 'list[(int, int, int)]' = []
     boundaries: Boundaries
     paving_dimensions: (int, int)
-    paving_facets: list[list[list[int]]]
+    paving_facets: 'list[list[list[int]]]'
 
     def to_json(self) -> dict:
         return {

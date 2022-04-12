@@ -1,14 +1,15 @@
 import json
 import os
+import argparse
 from shutil import copy, SameFileError
 
 from PIL import Image
 from pathlib import Path
 
-from models.reconstruction import parse_reconstruction
+from odm_report_shot_coverage.models.reconstruction import parse_reconstruction
 
 
-def copy_orthophoto(src_dir: str, target_dir: str):
+def _copy_orthophoto(src_dir: str, target_dir: str):
     im = Image.open('%s/odm_orthophoto/odm_orthophoto.tif' % src_dir)
     im.save('%s/odm_orthophoto.png' % target_dir)
 
@@ -22,7 +23,7 @@ def copy_orthophoto(src_dir: str, target_dir: str):
             json.dump(corners, fd_out)
 
 
-def copy_images(src_dir: str, target_dir: str):
+def _copy_images(src_dir: str, target_dir: str):
     Path(target_dir).mkdir(parents=True, exist_ok=True)
     target_size = 400
     for file_name in os.listdir(src_dir):
@@ -34,23 +35,29 @@ def copy_images(src_dir: str, target_dir: str):
         im.save('%s/%s' % (target_dir, file_name))
 
 
-def copy_web_app(target_dir: str):
-    for file_name in os.listdir('web'):
-        if file_name != 'data':
+def _copy_web_app(target_dir: str):
+    web_dir = os.path.dirname(__file__) + '/web'
+    for file_name in os.listdir(web_dir):
+        if file_name not in {'data', 'images'}:
             try:
-                copy('web/' + file_name, target_dir)
+                copy(web_dir + '/' + file_name, target_dir)
             except SameFileError:
                 pass
 
 
-if __name__ == '__main__':
-    project_dir = 'example/project'
+def main():
+    parser = argparse.ArgumentParser(description='Build an OpenDroneMap shot coverage report')
+    parser.add_argument("project", help="the ODM project root folder",
+                        type=str)
+    args = parser.parse_args()
+    project_dir = args.project
+
     out_dir = project_dir + '/odm_report/shot_coverage'
     Path(out_dir + '/data').mkdir(parents=True, exist_ok=True)
 
-    copy_web_app(out_dir)
-    copy_images(project_dir + '/images', out_dir + '/images')
-    copy_orthophoto(project_dir, out_dir + '/data')
+    _copy_web_app(out_dir)
+    _copy_images(project_dir + '/images', out_dir + '/images')
+    _copy_orthophoto(project_dir, out_dir + '/data')
 
     reconstruction = parse_reconstruction(project_dir)
 
@@ -58,3 +65,12 @@ if __name__ == '__main__':
 
     with open('%s/data/reconstruction_shots.json' % out_dir, 'w') as fd_out:
         json.dump(reconstruction.to_json(), fd_out)
+
+    print('Shot coverage completed')
+    print('To open the results page, launch:')
+    print('python -m http.server --directory %s 8001' % out_dir)
+    print('And open http://localhost:8001 (or change port value if already taken)')
+
+
+if __name__ == '__main__':
+    main()

@@ -1,11 +1,28 @@
 # OpenDroneMap - A shot coverage report
 
-From an [OpenDronMap](https://www.opendronemap.org/) reconstruction, our goal is to see which part of the orthophoto is
+From an [OpenDroneMap](https://www.opendronemap.org/) reconstruction, our goal is to see which part of the orthophoto is
 covered by each shot.
 
 We propose a web app with the orthophoto and camera positions displayed. Clicking on photo displays the covered area.
 
 ![](doc/snapshot-coverage.png)
+
+## How to run it?
+
+### How to install
+You need Python >= 3.8
+
+```
+pip install odm-report-shot-coverage
+```
+$
+### Processing
+
+```
+odm-report-shot-coverage PATH_TO_ODM_PROJECT
+```
+
+And follow the instructions to open the local web page. (Execution time is ~15 seconds for 60 images on a macbook pro)
 
 ## How does it work?
 
