@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from models.shot import Boundaries
-from models.wavefront_25d import _parse_facet_vertices, _paving_sizes
+from odm_report_shot_coverage.models.shot import Boundaries
+from odm_report_shot_coverage.models.wavefront_25d import _parse_facet_vertices, _paving_sizes
 
 
 class Test(TestCase):

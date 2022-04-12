@@ -1,6 +1,6 @@
-from models.camera import Camera
-from models.point import Point
-from models.shot import Shot
+from odm_report_shot_coverage.models.camera import Camera
+from odm_report_shot_coverage.models.point import Point
+from odm_report_shot_coverage.models.shot import Shot
 
 
 class TestFixtures:

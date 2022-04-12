@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from models.reconstruction import parse_reconstruction
+from odm_report_shot_coverage.models.reconstruction import parse_reconstruction
 
 
 class Test(TestCase):

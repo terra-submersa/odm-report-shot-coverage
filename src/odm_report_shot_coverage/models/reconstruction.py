@@ -1,18 +1,18 @@
 import geojson
 from scipy import stats
 
-from models.camera import Camera, json_parse_camera
-from models.shot import Shot, shot_boundaries_from_points
-from models.wavefront_25d import Wavefront25D, parse_wavefront_25d_obj
+from odm_report_shot_coverage.models.camera import Camera, json_parse_camera
+from odm_report_shot_coverage.models.shot import Shot, shot_boundaries_from_points
+from odm_report_shot_coverage.models.wavefront_25d import Wavefront25D, parse_wavefront_25d_obj
 
 
 class Reconstruction:
-    cameras: dict[str, Camera] = {}
-    _shots: list[Shot] = []
+    cameras: 'dict[str, Camera]' = {}
+    _shots: 'list[Shot]' = []
     mesh = Wavefront25D
 
     @property
-    def shots(self) -> list[Shot]:
+    def shots(self) -> 'list[Shot]':
         self._shots.sort(key=lambda s: s.image_name)
         return self._shots
 
@@ -42,7 +42,6 @@ class Reconstruction:
                 pixel = shot.camera_pixel(point)
                 if shot.camera.in_frame(pixel):
                     points.append(point)
-
             shot.boundaries = shot_boundaries_from_points(points)
 
     def find_camera_by_width_height(self, width: int, height: int) -> Camera:
@@ -53,7 +52,7 @@ class Reconstruction:
 
 
 class ReconstructionCollection:
-    reconstructions: list[Reconstruction] = []
+    reconstructions: 'list[Reconstruction]' = []
 
     def append(self, reconstruction: Reconstruction):
         self.reconstructions.append(reconstruction)
@@ -65,7 +64,7 @@ class ReconstructionCollection:
         return len(self.reconstructions)
 
 
-def lin_reg(pairs: list[(float, float)]) -> (float, float, float, float):
+def lin_reg(pairs: 'list[(float, float)]') -> (float, float, float, float):
     x = [p[0] for p in pairs]
     y = [p[1] for p in pairs]
     return stats.linregress(x, y)

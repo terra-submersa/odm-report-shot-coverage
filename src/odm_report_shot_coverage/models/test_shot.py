@@ -2,8 +2,8 @@ from unittest import TestCase
 
 import numpy as np
 
-from models.point import Point
-from models.shot import Shot, shot_boundaries_from_points
+from odm_report_shot_coverage.models.point import Point
+from odm_report_shot_coverage.models.shot import Shot, shot_boundaries_from_points
 
 
 class TestShot(TestCase):

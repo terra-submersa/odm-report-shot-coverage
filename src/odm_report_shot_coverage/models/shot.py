@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R, Rotation
 
-from models.camera import Camera
+from odm_report_shot_coverage.models.camera import Camera
 
 
 class ShotBoundaries:
@@ -24,7 +24,7 @@ class ShotBoundaries:
         return '[%f, %f] x [%f, %f]' % (self.x_min, self.x_max, self.y_min, self.y_max)
 
 
-def shot_boundaries_from_points(points: list[(float, float)], nb_path_points: int = 36) -> ShotBoundaries:
+def shot_boundaries_from_points(points: 'list[(float, float)]', nb_path_points: int = 36) -> ShotBoundaries:
     midpoint = (sum([p[0] for p in points]) / len(points), sum([p[1] for p in points]) / len(points))
     dist_slices = [0 for i in range(nb_path_points)]
     furthest_slices = [midpoint for i in range(nb_path_points)]
@@ -69,10 +69,10 @@ class Shot:
         self._rotation = new_rotation
         (r_x, r_y, r_z) = new_rotation
         self._transfo_rotation = R.from_rotvec([r_x, r_y, r_z])
-        euler =  self._transfo_rotation.as_euler('xyz')
+        euler = self._transfo_rotation.as_euler('xyz')
         self.rotation_euler_xyz = (euler[0], euler[1], euler[2])
 
-    def boundaries_from_points(self, points: list[(float, float)]):
+    def boundaries_from_points(self, points: 'list[(float, float)]'):
         self.boundaries = shot_boundaries_from_points(points)
 
     def __repr__(self):
@@ -85,7 +85,7 @@ class Shot:
     def to_json(self):
         return {
             'imageName': self.image_name,
-            'originalDimensions':{
+            'originalDimensions': {
                 'width': self.camera.width,
                 'height': self.camera.height,
             },
@@ -148,7 +148,7 @@ class Boundaries:
         return '[%f, %f] x [%f, %f]' % (self.x_min, self.x_max, self.y_min, self.y_max)
 
 
-def json_parse_shot(image_name: str, el: dict, cameras: dict[str, Camera]) -> Shot:
+def json_parse_shot(image_name: str, el: dict, cameras: 'dict[str, Camera]') -> Shot:
     shot = Shot()
     shot.image_name = image_name
     shot.rotation = el['rotation']

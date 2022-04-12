@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import numpy as np
 
-from models.camera import json_parse_camera
-from models.test_fixtures import TestFixtures as Fixtures
+from odm_report_shot_coverage.models.camera import json_parse_camera
+from odm_report_shot_coverage.models.test_fixtures import TestFixtures as Fixtures
 
 
 class Test(TestCase):
