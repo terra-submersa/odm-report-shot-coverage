@@ -24,7 +24,7 @@ class ShotBoundaries:
         return '[%f, %f] x [%f, %f]' % (self.x_min, self.x_max, self.y_min, self.y_max)
 
 
-def shot_boundaries_from_points(points: 'list[(float, float)]', nb_path_points: int = 36) -> ShotBoundaries:
+def shot_boundaries_from_points(points: 'list[(float, float)]', nb_path_points: int = 24) -> ShotBoundaries:
     if len(points) == 0:
         return ShotBoundaries([])
 
@@ -111,9 +111,6 @@ class Shot:
             2]
         rc = self._transfo_rotation.apply(tc, inverse=False)
         return rc[0], rc[1], rc[2]
-        # rc = self._transfo_rotation.apply(abs_coords, inverse=True)
-        # tc = rc[0] - self.translation[0], rc[1] - self.translation[1], rc[2] - self.translation[2]
-        # return tc
 
     def camera_pixel(self, abs_coords: (float, float, float)) -> (float, float):
         """

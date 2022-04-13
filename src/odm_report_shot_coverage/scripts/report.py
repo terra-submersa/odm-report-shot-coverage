@@ -19,18 +19,6 @@ def _copy_orthophoto(src_dir: str, target_dir: str) -> Boundaries:
     im = Image.open('%s/odm_orthophoto/odm_orthophoto.tif' % src_dir)
     im.save('%s/odm_orthophoto.png' % target_dir)
 
-    with open('%s/odm_orthophoto/odm_orthophoto_corners.txt' % src_dir) as fd_in:
-        vs = fd_in.readline().split(' ')
-        boundaries = Boundaries(
-            x_min=float(vs[0]),
-            x_max=float(vs[2]),
-            y_min=float(vs[1]),
-            y_max=float(vs[3]),
-        )
-        with open('%s/odm_orthophoto_boundaries.json' % target_dir, 'w') as fd_out:
-            json.dump(boundaries.to_json(), fd_out)
-        return boundaries
-
 
 def _copy_images(src_dir: str, target_dir: str):
     Path(target_dir).mkdir(parents=True, exist_ok=True)
