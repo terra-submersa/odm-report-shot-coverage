@@ -2,31 +2,41 @@ import json
 import os
 import argparse
 from shutil import copy, SameFileError
+import logging
+from tqdm import tqdm
 
 from PIL import Image
 from pathlib import Path
 
 from odm_report_shot_coverage.models.reconstruction import parse_reconstruction
+from odm_report_shot_coverage.models.shot import Boundaries
+
+Image.MAX_IMAGE_PIXELS = 1000000000
 
 
-def _copy_orthophoto(src_dir: str, target_dir: str):
+def _copy_orthophoto(src_dir: str, target_dir: str) -> Boundaries:
+    logging.info('Copying orthophoto')
     im = Image.open('%s/odm_orthophoto/odm_orthophoto.tif' % src_dir)
     im.save('%s/odm_orthophoto.png' % target_dir)
 
     with open('%s/odm_orthophoto/odm_orthophoto_corners.txt' % src_dir) as fd_in:
         vs = fd_in.readline().split(' ')
-        corners = {
-            'x': [float(vs[0]), float(vs[2])],
-            'y': [float(vs[1]), float(vs[3])],
-        }
-        with open('%s/odm_orthophoto_corners.json' % target_dir, 'w') as fd_out:
-            json.dump(corners, fd_out)
+        boundaries = Boundaries(
+            x_min=float(vs[0]),
+            x_max=float(vs[2]),
+            y_min=float(vs[1]),
+            y_max=float(vs[3]),
+        )
+        with open('%s/odm_orthophoto_boundaries.json' % target_dir, 'w') as fd_out:
+            json.dump(boundaries.to_json(), fd_out)
+        return boundaries
 
 
 def _copy_images(src_dir: str, target_dir: str):
     Path(target_dir).mkdir(parents=True, exist_ok=True)
     target_size = 400
-    for file_name in os.listdir(src_dir):
+    image_files = os.listdir(src_dir)
+    for file_name in tqdm(image_files, desc='Resizing images'):
         im = Image.open('%s/%s' % (src_dir, file_name))
         width, height = im.size
         max_size = max(width, height)
@@ -36,6 +46,7 @@ def _copy_images(src_dir: str, target_dir: str):
 
 
 def _copy_web_app(target_dir: str):
+    logging.info('Copying web app')
     web_dir = os.path.dirname(__file__) + '/web'
     for file_name in os.listdir(web_dir):
         if file_name not in {'data', 'images'}:
@@ -46,6 +57,7 @@ def _copy_web_app(target_dir: str):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(description='Build an OpenDroneMap shot coverage report')
     parser.add_argument("project", help="the ODM project root folder",
                         type=str)
@@ -57,12 +69,15 @@ def main():
 
     _copy_web_app(out_dir)
     _copy_images(project_dir + '/images', out_dir + '/images')
-    _copy_orthophoto(project_dir, out_dir + '/data')
+    orthophoto_boundaries = _copy_orthophoto(project_dir, out_dir + '/data')
 
+    logging.info('Parsing reconstruction')
     reconstruction = parse_reconstruction(project_dir)
 
+    logging.info('Computing shot boundaries')
     reconstruction.compute_shot_boundaries()
 
+    logging.info('Saving reconstruction_shots.json')
     with open('%s/data/reconstruction_shots.json' % out_dir, 'w') as fd_out:
         json.dump(reconstruction.to_json(), fd_out)
 

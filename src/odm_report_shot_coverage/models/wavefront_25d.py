@@ -26,7 +26,9 @@ class Wavefront25D:
             x_min=min([pc[0] for pc in self.points]),
             x_max=max([pc[0] for pc in self.points]),
             y_min=min([pc[1] for pc in self.points]),
-            y_max=max([pc[1] for pc in self.points])
+            y_max=max([pc[1] for pc in self.points]),
+            z_min=min([pc[2] for pc in self.points]),
+            z_max=max([pc[2] for pc in self.points]),
         )
 
     def _paving_indices(self, x: float, y: float) -> (int, int):

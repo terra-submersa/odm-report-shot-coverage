@@ -15,7 +15,7 @@ You need Python >= 3.8
 ```
 pip install odm-report-shot-coverage
 ```
-$
+
 ### Processing
 
 ```
@@ -33,6 +33,7 @@ directory:
 cameras.json
 images/*
 odm_report/shots.geojson
+odm_report/stats.json
 odm_orthophoto/odm_orthophoto.tif
 odm_orthophoto/odm_orthophoto_corners.txt
 odm_texturing_25d/odm_textured_model_geo.obj
@@ -61,6 +62,36 @@ such situations.
 To map x,y,z points from the 2.5d model onto camera pixels, we use the
 [*perspective* model](https://opensfm.readthedocs.io/en/latest/geometry.html#camera-models), as I have not found the
 information for other projections (such as the *Brown*, used by the GoPro).
+
+## Code Architecture
+
+Two main components:
+  * Python to reconstruct the shot boundaries, resize original images and set up the web app directory
+  * A JavaScript + D3.js for the front end
+
+### Python Processing
+
+The code is in `src/` and the entry point [`odm_report_shot_coverage/scripts/report.py`](src/odm_report_shot_coverage/scripts/report.py).
+
+Beside copying (and resizing) original images, setting up the web app, the main purpose is to recompute the shot boundaries:
+  1. parse the 2.5d model from the `odm_texturing_25d` wavefront object file (only vertices are used)
+  2. parse camera specs from `cameras.json`
+  3. Extract the *native* coordinates system from `stats.json` 
+  4. Get shot position + rotation from `shot.geojson`; shot positions are shifted from native to the 25d model/ortho photo 
+  5. Convert and get the ortho photo boundaries
+  6. For each vertex, see if they appear in the camera image (with the limitation of the perspective projective + absence of ray tracing described above)
+  7. For each shot, compute the boundaries around the subset of vertices within each frame
+
+### JavaScript
+
+Base on the web app asset + files computed by the Python processing, the code uses some d3.js 
+
+### CI/CD
+
+Being hosted on Github, we use actions for the CI/CD:
+ * testing the Python code (pytest)
+ * linting and security check
+ * deployment on Azure static web app
 
 ## Author
 

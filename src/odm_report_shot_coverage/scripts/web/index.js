@@ -10,8 +10,6 @@ function loadData() {
     const scales = {};
     const axes = {};
 
-    const selectedShots = [];
-
     const elSvgContainer = d3.select('#svg-container');
     const svg = d3.select('svg')
         .attr('width', elSvgContainer.node().clientWidth)
@@ -27,17 +25,13 @@ function loadData() {
             initScales(rec);
             //setupPoints(rec);
             refreshShots(rec);
-        })
-        .then(() =>
-            d3.json(`${projectDir}/odm_orthophoto_corners.json`)
-        )
-        .then(corners => {
+            const ob = rec.orthophotoBoundaries;
             elOrthoImage
-                .attr('x', scales.x(corners.x[0]))
-                .attr('y', scales.y(corners.y[1]))
-                .attr('width', scales.x(corners.x[1]) - scales.x(corners.x[0]))
-            //.attr('height', scales.y(corners.y[1]) - scales.y(corners.y[0]));
-        });
+                .attr('x', scales.x(ob.xMin))
+                .attr('y', scales.y(ob.yMax))
+                .attr('width', scales.x(ob.xMax) - scales.x(ob.xMin))
+        })
+
 
 
     function parseReconstruction(json) {
@@ -46,6 +40,7 @@ function loadData() {
             shots: json.shots,
             cameras: json.cameras,
             boundaries: json.boundaries,
+            orthophotoBoundaries: json.orthophotoBoundaries
         };
         rec.shots.forEach(s => s.camera = rec.cameras[s.camera]);
 
@@ -116,7 +111,9 @@ function loadData() {
                         .attr('name', s => s.imageName)
                         .attr('d', s => {
                             const p = [...s.boundaries.path];
-                            p.push(s.boundaries.path[0]);
+                            if(s.boundaries.path.length>0) {
+                                p.push(s.boundaries.path[0]);
+                            }
                             return line(p);
                         });
                 },

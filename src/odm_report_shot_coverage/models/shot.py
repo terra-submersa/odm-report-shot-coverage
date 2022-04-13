@@ -25,6 +25,9 @@ class ShotBoundaries:
 
 
 def shot_boundaries_from_points(points: 'list[(float, float)]', nb_path_points: int = 36) -> ShotBoundaries:
+    if len(points) == 0:
+        return ShotBoundaries([])
+
     midpoint = (sum([p[0] for p in points]) / len(points), sum([p[1] for p in points]) / len(points))
     dist_slices = [0 for i in range(nb_path_points)]
     furthest_slices = [midpoint for i in range(nb_path_points)]
@@ -129,12 +132,17 @@ class Boundaries:
     x_max: float
     y_min: float
     y_max: float
+    z_min: float
+    z_max: float
 
-    def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float):
+    def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float, z_min: float = None,
+                 z_max: float = None):
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min
         self.y_max = y_max
+        self.z_min = z_min
+        self.z_max = z_max
 
     def to_json(self) -> dict:
         return {
@@ -142,6 +150,8 @@ class Boundaries:
             'xMax': self.x_max,
             'yMin': self.y_min,
             'yMax': self.y_max,
+            'zMin': self.z_min,
+            'zMax': self.z_max,
         }
 
     def __repr__(self):
