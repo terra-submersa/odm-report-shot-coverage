@@ -57,7 +57,7 @@ def main():
 
     _copy_web_app(out_dir)
     _copy_images(project_dir + '/images', out_dir + '/images')
-    orthophoto_boundaries = _copy_orthophoto(project_dir, out_dir + '/data')
+    _copy_orthophoto(project_dir, out_dir + '/data')
 
     logging.info('Parsing reconstruction')
     reconstruction = parse_reconstruction(project_dir)
